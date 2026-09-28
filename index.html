@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Immobilien & Kredit Rechner</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f4f7;
+    margin: 0;
+    padding: 20px;
+    color: #172033;
+}
+
+.container {
+    max-width: 700px;
+    margin: auto;
+}
+
+.box {
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 17px;
+}
+
+button {
+    width: 100%;
+    padding: 16px;
+    margin-top: 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.result {
+    background: #f8fafc;
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.big {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.green {
+    color: #15803d;
+}
+
+.red {
+    color: #b91c1c;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏠 Immobilien & Kredit Rechner</h1>
+
+<div class="box">
+<h2>💰 Finanzierung</h2>
+
+<label>Kreditsumme (€)</label>
+<input id="kredit" type="number" value="300000">
+
+<label>Zinssatz (% pro Jahr)</label>
+<input id="zins" type="number" value="3.5" step="0.01">
+
+<label>Laufzeit (Jahre)</label>
+<input id="laufzeit" type="number" value="25">
+</div>
+
+<div class="box">
+<h2>🏠 Vermietung</h2>
+
+<label>Wohnfläche (m²)</label>
+<input id="qm" type="number" value="80">
+
+<label>Kaltmiete pro m² (€)</label>
+<input id="mietpreis" type="number" value="12" step="0.10">
+
+<label>Nicht umlagefähige Kosten pro Monat (€)</label>
+<input id="kosten" type="number" value="200">
+
+<label>Leerstand / Mietausfall (%)</label>
+<input id="leerstand" type="number" value="3" step="0.5">
+
+<button onclick="berechnen()">🧮 BERECHNEN</button>
+</div>
+
+<div class="box">
+<h2>📊 Ergebnis</h2>
+
+<div class="result">
+Kreditrate pro Monat:
+<div class="big" id="rate">–</div>
+</div>
+
+<div class="result">
+Kaltmiete pro Monat:
+<div class="big" id="miete">–</div>
+</div>
+
+<div class="result">
+Cashflow pro Monat:
+<div class="big" id="cashflow">–</div>
+</div>
+
+<div class="result">
+Gesamte Zinsen:
+<div class="big" id="zinsen">–</div>
+</div>
+
+<div class="result">
+Gesamtrückzahlung:
+<div class="big" id="gesamt">–</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function euro(wert) {
+    return new Intl.NumberFormat("de-DE", {
+        style: "currency",
+        currency: "EUR"
+    }).format(wert);
+}
+
+function berechnen() {
+
+    let kredit = Number(document.getElementById("kredit").value);
+    let zins = Number(document.getElementById("zins").value);
+    let laufzeit = Number(document.getElementById("laufzeit").value);
+
+    let qm = Number(document.getElementById("qm").value);
+    let mietpreis = Number(document.getElementById("mietpreis").value);
+    let kosten = Number(document.getElementById("kosten").value);
+    let leerstand = Number(document.getElementById("leerstand").value);
+
+    let monate = laufzeit * 12;
+    let monatszins = zins / 100 / 12;
+
+    let rate;
+
+    if (monatszins === 0) {
+
+        rate = kredit / monate;
+
+    } else {
+
+        rate = kredit *
+        (monatszins * Math.pow(1 + monatszins, monate)) /
+        (Math.pow(1 + monatszins, monate) - 1);
+
+    }
+
+    let gesamt = rate * monate;
+    let zinsen = gesamt - kredit;
+
+    let kaltmiete = qm * mietpreis;
+
+    let mietausfall = kaltmiete * (leerstand / 100);
+
+    let effektiveMiete = kaltmiete - mietausfall;
+
+    let cashflow = effektiveMiete - kosten - rate;
+
+    document.getElementById("rate").innerText = euro(rate);
+
+    document.getElementById("miete").innerText = euro(kaltmiete);
+
+    document.getElementById("cashflow").innerText =
+        (cashflow >= 0 ? "+" : "") + euro(cashflow);
+
+    document.getElementById("zinsen").innerText = euro(zinsen);
+
+    document.getElementById("gesamt").innerText = euro(gesamt);
+
+    let cf = document.getElementById("cashflow");
+
+    if (cashflow >= 0) {
+        cf.className = "big green";
+    } else {
+        cf.className = "big red";
+    }
+}
+
+</script>
+
+</body>
+</html>
